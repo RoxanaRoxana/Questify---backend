@@ -25,10 +25,6 @@ const user = new Schema(
       type: String,
       default: null,
     },
-    sid: {
-      type: String,
-      default: null,
-    },
   },
   { versionKey: false }
 );

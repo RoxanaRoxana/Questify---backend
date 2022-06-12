@@ -1,5 +1,6 @@
 const User = require("../service/schemas/user");
 const Card = require("../service/schemas/card");
+const Session = require("../service/schemas/sessions");
 const { userSchema } = require("../helpers/joi");
 const jwt = require("jsonwebtoken");
 const { v4: uuidv4 } = require("uuid");
@@ -72,11 +73,11 @@ const loginUser = async (req, res, next) => {
   });
 
   const sid = uuidv4();
+  await Session.create({ sid, owner: user._id });
 
   await User.findByIdAndUpdate(user._id, {
     accessToken,
     refreshToken,
-    sid,
   });
 
   const userCards = await Card.find({ owner: user._id });
@@ -84,7 +85,6 @@ const loginUser = async (req, res, next) => {
   res.status(200).json({
     accessToken,
     refreshToken,
-    sid,
     userData: {
       email,
       id: user._id,
@@ -102,12 +102,14 @@ const logoutUser = async (req, res, next) => {
     });
   }
 
+  const userSession = await Session.findOne({ owner: _id });
+
   try {
     await User.findByIdAndUpdate(_id, {
       accessToken: null,
       refreshToken: null,
-      sid: null,
     });
+    await Session.findByIdAndRemove(userSession._id);
     return res.status(204).json({
       status: "No Content",
       code: 204,
@@ -126,11 +128,13 @@ const refreshTokens = async (req, res, next) => {
   }
 
   const { _id } = req.user;
-  const user = await User.findOne({ _id });
+  const userSession = await Session.findOne({ owner: _id });
 
-  if (sid !== user.sid) {
+  if (sid !== userSession.sid) {
     return res.status(403).json({ message: "Wrong sid provided" });
   }
+
+  const user = await User.findOne({ _id });
 
   const payload = {
     id: user._id,
@@ -149,6 +153,8 @@ const refreshTokens = async (req, res, next) => {
     await User.findByIdAndUpdate(_id, {
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
+    });
+    await Session.findByIdAndUpdate(userSession._id, {
       sid: newSid,
     });
   } catch (e) {
@@ -157,10 +163,11 @@ const refreshTokens = async (req, res, next) => {
   }
 
   const newUserData = await User.findOne({ _id });
+  const newSessionData = await Session.findOne({ owner: _id });
   res.status(200).json({
     newAccessToken: newUserData.accessToken,
     newRefreshToken: newUserData.refreshToken,
-    newSid: newUserData.sid,
+    newSid: newSessionData.sid,
   });
 };
 
