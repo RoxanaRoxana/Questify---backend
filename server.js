@@ -2,12 +2,35 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const routes = require("./routes/routes");
+const swaggerJsDoc = require("swagger-jsdoc");
+const swaggerUi = require("swagger-ui-express");
 
 require("dotenv").config();
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+
+app.use("*", cors("*"));
+
+const swaggerOptions = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "Questify",
+      version: "1.0.0",
+      description: "GoIT PL ON 2 Final Project",
+    },
+    servers: [
+      {
+        url: "http://localhost:3000",
+      },
+    ],
+  },
+  apis: ["routes/routes.js"],
+};
+
+const swaggerDocs = swaggerJsDoc(swaggerOptions);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 require("./config/passport");
 
