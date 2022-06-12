@@ -1,6 +1,8 @@
 const User = require("../service/schemas/user");
+const Card = require("../service/schemas/card");
 const { userSchema } = require("../helpers/joi");
 const jwt = require("jsonwebtoken");
+const { v4: uuidv4 } = require("uuid");
 
 const getAllUsers = async (req, res, next) => {
   try {
@@ -62,30 +64,50 @@ const loginUser = async (req, res, next) => {
     email: user.email,
   };
 
-  const token = jwt.sign(payload, process.env.SECRET, { expiresIn: "1h" });
+  const accessToken = jwt.sign(payload, process.env.SECRETACC, {
+    expiresIn: "1h",
+  });
+  const refreshToken = jwt.sign(payload, process.env.SECRETREF, {
+    expiresIn: "1h",
+  });
 
-  await User.findByIdAndUpdate(user._id, { token: token });
+  const sid = uuidv4();
+
+  await User.findByIdAndUpdate(user._id, {
+    accessToken,
+    refreshToken,
+    sid,
+  });
+
+  const userCards = await Card.find({ owner: user._id });
 
   res.status(200).json({
-    token,
+    accessToken,
+    refreshToken,
+    sid,
     userData: {
       email,
       id: user._id,
+      cards: userCards,
     },
   });
 };
 
 const logoutUser = async (req, res, next) => {
-  const { _id, token } = req.user;
+  const { _id, accessToken } = req.user;
 
-  if (!token) {
+  if (!accessToken) {
     return res.status(400).json({
-      message: "No token provided",
+      message: "No accessToken provided",
     });
   }
 
   try {
-    await User.findByIdAndUpdate(_id, { token: null });
+    await User.findByIdAndUpdate(_id, {
+      accessToken: null,
+      refreshToken: null,
+      sid: null,
+    });
     return res.status(204).json({
       status: "No Content",
       code: 204,
@@ -96,4 +118,56 @@ const logoutUser = async (req, res, next) => {
   }
 };
 
-module.exports = { getAllUsers, registerUser, loginUser, logoutUser };
+const refreshTokens = async (req, res, next) => {
+  const { sid } = req.body;
+
+  if (!sid) {
+    return res.status(400).json({ message: "No sid provided" });
+  }
+
+  const { _id } = req.user;
+  const user = await User.findOne({ _id });
+
+  if (sid !== user.sid) {
+    return res.status(403).json({ message: "Wrong sid provided" });
+  }
+
+  const payload = {
+    id: user._id,
+    email: user.email,
+  };
+
+  const newAccessToken = jwt.sign(payload, process.env.SECRETACC, {
+    expiresIn: "1h",
+  });
+  const newRefreshToken = jwt.sign(payload, process.env.SECRETREF, {
+    expiresIn: "1h",
+  });
+  const newSid = uuidv4();
+
+  try {
+    await User.findByIdAndUpdate(_id, {
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+      sid: newSid,
+    });
+  } catch (e) {
+    console.error(e);
+    next(e);
+  }
+
+  const newUserData = await User.findOne({ _id });
+  res.status(200).json({
+    newAccessToken: newUserData.accessToken,
+    newRefreshToken: newUserData.refreshToken,
+    newSid: newUserData.sid,
+  });
+};
+
+module.exports = {
+  getAllUsers,
+  registerUser,
+  loginUser,
+  logoutUser,
+  refreshTokens,
+};
