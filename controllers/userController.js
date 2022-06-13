@@ -93,6 +93,7 @@ const loginUser = async (req, res, next) => {
   res.status(200).json({
     accessToken,
     refreshToken,
+    sid,
     userData: {
       email,
       id: user._id,

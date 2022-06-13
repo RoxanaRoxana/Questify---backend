@@ -13,6 +13,14 @@ const createCard = async (req, res, next) => {
     return res.status(400).json({ message: error.message });
   }
 
+  const cardWithTheSameTitle = await Card.findOne({ title: title });
+
+  if (cardWithTheSameTitle) {
+    return res.status(403).json({
+      message: "Card's title must be unique",
+    });
+  }
+
   try {
     const result = await Card.create({
       title,

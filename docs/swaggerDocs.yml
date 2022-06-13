@@ -642,6 +642,8 @@ paths:
           description: Bad Request (invalid request body)
         "401":
           description: Unauthorized
+        "403":
+          description: Card's title must be unique
         "500":
           description: Card validation failed
     get:
