@@ -1,10 +1,13 @@
 const Card = require("../service/schemas/card");
 const { cardSchema } = require("../helpers/joi");
+const mongoose = require("mongoose");
 
 const createCard = async (req, res, next) => {
   const { title, difficulty, category, date, time, type } = req.body;
   const { _id } = req.user;
-  const { error } = cardSchema.validate({ title });
+  const { error } = cardSchema.validate({
+    title,
+  });
 
   if (error) {
     return res.status(400).json({ message: error.message });
@@ -29,6 +32,11 @@ const createCard = async (req, res, next) => {
 
 const editCard = async (req, res, next) => {
   const { cardId } = req.params;
+
+  if (!mongoose.isValidObjectId(cardId)) {
+    return res.status(400).json({ message: "Invalid cardId" });
+  }
+
   const newCardData = req.body;
   try {
     const result = await Card.findOneAndUpdate(
@@ -53,6 +61,10 @@ const editCard = async (req, res, next) => {
 
 const deleteCard = async (req, res, next) => {
   const { cardId } = req.params;
+
+  if (!mongoose.isValidObjectId(cardId)) {
+    return res.status(400).json({ message: "Invalid cardId" });
+  }
 
   const card = await Card.findOne({ _id: cardId });
 
@@ -84,15 +96,26 @@ const getAllUsersCards = async (req, res, next) => {
 
 const updateCardCompletion = async (req, res, next) => {
   const { cardId } = req.params;
-  const { isCompleted } = req.body;
+
+  if (!mongoose.isValidObjectId(cardId)) {
+    return res.status(400).json({ message: "Invalid cardId" });
+  }
+
+  const cardToUpdate = await Card.findOne({ _id: cardId }).lean();
+
+  if (cardToUpdate.isCompleted === true) {
+    return res.status(409).json({ message: "Card has already been completed" });
+  }
+
   try {
-    const result = await Card.findByIdAndUpdate(cardId, { isCompleted });
+    const result = await Card.findByIdAndUpdate(cardId, { isCompleted: true });
     if (!result) {
       res.status(404).json({ message: "Card not found!" });
     } else {
+      const updatedCard = await Card.findById({ _id: cardId }).lean();
       res.status(200).json({
-        message: `Card status was changed to ${isCompleted}`,
-        editedCard: result,
+        message: "Card status was changed to 'completed'",
+        editedCard: updatedCard,
       });
     }
   } catch (e) {

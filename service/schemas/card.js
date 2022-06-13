@@ -28,6 +28,7 @@ const card = new Schema(
     type: {
       type: String,
       enum: ["Task", "Challenge"],
+      required: [true, "Card's type is required"],
     },
     isCompleted: {
       type: Boolean,

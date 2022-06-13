@@ -15,7 +15,7 @@ router.patch("/card/:cardId", authMiddleware, cardController.editCard);
 router.delete("/card/:cardId", authMiddleware, cardController.deleteCard);
 router.get("/card", authMiddleware, cardController.getAllUsersCards);
 router.patch(
-  "/card/:cardId",
+  "/card/complete/:cardId",
   authMiddleware,
   cardController.updateCardCompletion
 );

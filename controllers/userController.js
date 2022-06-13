@@ -54,15 +54,26 @@ const loginUser = async (req, res, next) => {
   }
 
   const user = await User.findOne({ email });
+
+  if (!user) {
+    return res
+      .status(403)
+      .json({ message: "User with provided email doesn't exist" });
+  }
+
   const isPasswordCorrect = await user.validatePassword(password);
 
-  if (!user || !isPasswordCorrect) {
-    return res.status(403).json({ message: "Wrong credentials" });
+  if (!isPasswordCorrect) {
+    return res.status(403).json({ message: "Wrong password" });
   }
+
+  const sid = uuidv4();
+  await Session.create({ sid, owner: user._id });
 
   const payload = {
     id: user._id,
     email: user.email,
+    sid,
   };
 
   const accessToken = jwt.sign(payload, process.env.SECRETACC, {
@@ -71,9 +82,6 @@ const loginUser = async (req, res, next) => {
   const refreshToken = jwt.sign(payload, process.env.SECRETREF, {
     expiresIn: "1h",
   });
-
-  const sid = uuidv4();
-  await Session.create({ sid, owner: user._id });
 
   await User.findByIdAndUpdate(user._id, {
     accessToken,
