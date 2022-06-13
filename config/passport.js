@@ -11,7 +11,30 @@ const params = {
 };
 
 passport.use(
+  "accessStrategy",
   new Strategy(params, function (payload, done) {
+    User.findOne({ _id: payload.id })
+      .then((user) => {
+        if (!user) {
+          return done(new Error("User not found!"));
+        }
+        return done(null, user);
+      })
+      .catch((e) => {
+        done(e);
+      });
+  })
+);
+
+const secretRef = process.env.SECRETREF;
+const paramsRef = {
+  secretOrKey: secretRef,
+  jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
+};
+
+passport.use(
+  "refreshStrategy",
+  new Strategy(paramsRef, function (payload, done) {
     User.findOne({ _id: payload.id })
       .then((user) => {
         if (!user) {
