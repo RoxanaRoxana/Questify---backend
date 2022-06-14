@@ -12,8 +12,15 @@ const session = new Schema(
       type: Schema.Types.ObjectId,
       ref: "user",
     },
+    expireAt: {
+      type: Date,
+      default: Date.now,
+      index: {
+        expireAfterSeconds: 3600,
+      },
+    },
   },
-  { versionKey: false }
+  { versionKey: false, timestamps: true, index: true }
 );
 
 const Session = mongoose.model("session", session);
