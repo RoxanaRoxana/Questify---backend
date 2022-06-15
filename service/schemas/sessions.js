@@ -12,16 +12,15 @@ const session = new Schema(
       type: Schema.Types.ObjectId,
       ref: "user",
     },
-    expireAt: {
-      type: Date,
-      default: Date.now,
-      index: {
-        expireAfterSeconds: 3600,
-      },
-    },
+    // expireAt: {
+    //   type: Date,
+    //   default: Date.now() + 60 * 1000,
+    // },
   },
-  { versionKey: false, timestamps: true, index: true }
+  { versionKey: false }
 );
+
+// session.index({ expireAt: 1 }, { expires: 60 * 1000 });
 
 const Session = mongoose.model("session", session);
 

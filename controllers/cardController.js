@@ -4,6 +4,23 @@ const mongoose = require("mongoose");
 
 const createCard = async (req, res, next) => {
   const { title, difficulty, category, date, time, type } = req.body;
+
+  if (!title) {
+    return res.status(400).json({ message: "Title is required" });
+  }
+
+  if (!difficulty) {
+    return res.status(400).json({ message: "Difficulty is required" });
+  }
+
+  if (!date) {
+    return res.status(400).json({ message: "Date is required" });
+  }
+
+  if (!type) {
+    return res.status(400).json({ message: "Type is required" });
+  }
+
   const { _id } = req.user;
   const { error } = cardSchema.validate({
     title,

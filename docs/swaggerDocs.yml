@@ -31,16 +31,6 @@ components:
           format: password
           example: $2b$06$Urq1ur4hbPril/4jHZnleu9TQL86.mMdPJne5m599OlK1OV/3W8v2
           description: User's bcrypted password
-        accessToken:
-          type: string
-          format: jwt
-          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYyYTVlNzZiZTU2YjM1OWJiY2U2ZDBhMiIsImVtYWlsIjoicmFkZWtAZ21haWwuY29tIiwiaWF0IjoxNjU1MDUyMDM4LCJleHAiOjE2NTUwNTU2Mzh9.4uW-8WYaoqRFjRmFbzoWgUlmTgWG_JxrjSbi6shsElk
-          description: User's access token auto-generated using JWT
-        refreshToken:
-          type: string
-          format: jwt
-          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYyYTVlNzZiZTU2YjM1OWJiY2U2ZDBhMiIsImVtYWlsIjoicmFkZWtAZ21haWwuY29tIiwiaWF0IjoxNjU1MDUyMDM4LCJleHAiOjE2NTUwNTU2Mzh9.5BVPRez1ow7xRADNCj1OW7bxezd7AWPKeRv6aXSBkss
-          description: User's refresh token auto-generated using JWT
     Registration Request:
       type: object
       required:
@@ -599,7 +589,6 @@ paths:
         - bearerAuth: []
       requestBody:
         description: Object with session's id
-        required: true
         content:
           application/json:
             schema:

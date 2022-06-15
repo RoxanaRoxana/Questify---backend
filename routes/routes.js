@@ -3,7 +3,10 @@ const router = express.Router();
 const userController = require("../controllers/userController");
 const cardController = require("../controllers/cardController");
 const { accessMiddleware, refreshMiddleware } = require("../middleware/jwt");
-const authController = require("../controllers/authController");
+const {
+  protectAccess,
+  protectRefresh,
+} = require("../controllers/authController");
 
 router
   .get("/users", userController.getAllUsers)
@@ -11,39 +14,40 @@ router
   .post("/users/login", userController.loginUser)
   .post(
     "/users/logout",
-    authController.protect,
+    protectAccess,
     accessMiddleware,
     userController.logoutUser
   )
-  .post("/users/refresh", refreshMiddleware, userController.refreshTokens);
+  .post(
+    "/users/refresh",
+    protectRefresh,
+    refreshMiddleware,
+    userController.refreshTokens
+  );
 
 router
-  .post(
-    "/card",
-    authController.protect,
-    accessMiddleware,
-    cardController.createCard
-  )
+  .post("/card", protectAccess, accessMiddleware, cardController.createCard)
   .patch(
     "/card/:cardId",
-    authController.protect,
+    protectAccess,
     accessMiddleware,
     cardController.editCard
   )
   .delete(
     "/card/:cardId",
-    authController.protect,
+    protectAccess,
     accessMiddleware,
     cardController.deleteCard
   )
   .get(
     "/card",
-    authController.protect,
+    protectAccess,
     accessMiddleware,
     cardController.getAllUsersCards
   )
   .patch(
     "/card/complete/:cardId",
+    protectAccess,
     accessMiddleware,
     cardController.updateCardCompletion
   );

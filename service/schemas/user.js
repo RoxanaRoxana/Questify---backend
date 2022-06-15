@@ -17,14 +17,6 @@ const user = new Schema(
       maxlength: 100,
       required: [true, "Password is required"],
     },
-    accessToken: {
-      type: String,
-      default: null,
-    },
-    refreshToken: {
-      type: String,
-      default: null,
-    },
   },
   { versionKey: false }
 );

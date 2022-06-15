@@ -6,12 +6,12 @@ const ExtractJWT = passportJWT.ExtractJwt;
 const Strategy = passportJWT.Strategy;
 
 const params = {
-  secretOrKey: process.env.SECRETACC,
+  secretOrKey: process.env.SECRET_ACCESS,
   jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
 };
 
 const paramsRef = {
-  secretOrKey: process.env.SECRETREF,
+  secretOrKey: process.env.SECRET_REFRESH,
   jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
 };
 
@@ -30,7 +30,7 @@ const passportFunction = async (payload, done) => {
   if (session) {
     return done(null, user);
   } else if (!session) {
-    return done(new Error("Session expired!"));
+    return done(new Error("You are not logged in or session expired!"));
   } else {
     return done(new Error("Sid mismatch!"));
   }

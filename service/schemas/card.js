@@ -1,6 +1,9 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
+const currentDate = new Date();
+const currentHour = currentDate.toTimeString().split(" ")[0].slice(0, 5);
+
 const card = new Schema(
   {
     title: {
@@ -17,6 +20,7 @@ const card = new Schema(
     category: {
       type: String,
       enum: ["Stuff", "Family", "Health", "Learning", "Leisure", "Work"],
+      default: "Stuff",
     },
     date: {
       type: String,
@@ -24,6 +28,7 @@ const card = new Schema(
     },
     time: {
       type: String,
+      default: currentHour,
     },
     type: {
       type: String,
