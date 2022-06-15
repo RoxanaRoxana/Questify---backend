@@ -1,6 +1,14 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
+const currentTime = () => {
+  return new Date();
+};
+
+const timeInOneHour = () => {
+  return new Date(new Date().setHours(new Date().getHours() + 1));
+};
+
 const session = new Schema(
   {
     sid: {
@@ -12,15 +20,22 @@ const session = new Schema(
       type: Schema.Types.ObjectId,
       ref: "user",
     },
-    // expireAt: {
-    //   type: Date,
-    //   default: Date.now() + 60 * 1000,
-    // },
+    createdAt: {
+      type: Date,
+    },
+    thisSessionWasCreatedAt: {
+      type: String,
+      default: currentTime,
+    },
+    thisSessionWillExpireAt: {
+      type: String,
+      default: timeInOneHour,
+    },
   },
-  { versionKey: false }
+  { versionKey: false, timestamps: true }
 );
 
-// session.index({ expireAt: 1 }, { expires: 60 * 1000 });
+session.index({ createdAt: 1 }, { expireAfterSeconds: 3600 });
 
 const Session = mongoose.model("session", session);
 
