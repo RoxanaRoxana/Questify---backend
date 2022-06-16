@@ -1,5 +1,7 @@
+const { promisify } = require("util");
 const User = require("../service/schemas/user");
 const Card = require("../service/schemas/card");
+const Session = require("../service/schemas/sessions");
 const { userSchema } = require("../helpers/joi");
 const jwt = require("jsonwebtoken");
 const { v4: uuidv4 } = require("uuid");
@@ -16,6 +18,15 @@ const getAllUsers = async (req, res, next) => {
 
 const registerUser = async (req, res, next) => {
   const { email, password } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: "Email is required" });
+  }
+
+  if (!password) {
+    return res.status(400).json({ message: "Password is required" });
+  }
+
   const { error } = userSchema.validate({ email, password });
 
   if (error) {
@@ -46,6 +57,15 @@ const registerUser = async (req, res, next) => {
 
 const loginUser = async (req, res, next) => {
   const { email, password } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: "Email is required" });
+  }
+
+  if (!password) {
+    return res.status(400).json({ message: "Password is required" });
+  }
+
   const { error } = userSchema.validate({ email, password });
 
   if (error) {
@@ -53,30 +73,33 @@ const loginUser = async (req, res, next) => {
   }
 
   const user = await User.findOne({ email });
+
+  if (!user) {
+    return res
+      .status(403)
+      .json({ message: "User with provided email doesn't exist" });
+  }
+
   const isPasswordCorrect = await user.validatePassword(password);
 
-  if (!user || !isPasswordCorrect) {
-    return res.status(403).json({ message: "Wrong credentials" });
+  if (!isPasswordCorrect) {
+    return res.status(403).json({ message: "Wrong password" });
   }
+
+  const sid = uuidv4();
+  await Session.create({ sid, owner: user._id });
 
   const payload = {
     id: user._id,
     email: user.email,
+    sid,
   };
 
-  const accessToken = jwt.sign(payload, process.env.SECRETACC, {
+  const accessToken = jwt.sign(payload, process.env.SECRET_ACCESS, {
     expiresIn: "1h",
   });
-  const refreshToken = jwt.sign(payload, process.env.SECRETREF, {
+  const refreshToken = jwt.sign(payload, process.env.SECRET_REFRESH, {
     expiresIn: "1h",
-  });
-
-  const sid = uuidv4();
-
-  await User.findByIdAndUpdate(user._id, {
-    accessToken,
-    refreshToken,
-    sid,
   });
 
   const userCards = await Card.find({ owner: user._id });
@@ -94,20 +117,33 @@ const loginUser = async (req, res, next) => {
 };
 
 const logoutUser = async (req, res, next) => {
-  const { _id, accessToken } = req.user;
+  // 1) initialize token
+  let token;
 
-  if (!accessToken) {
-    return res.status(400).json({
-      message: "No accessToken provided",
-    });
+  // 2) get token from headers and assign it to variable without it's 'Bearer' prefix
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    token = req.headers.authorization.split(" ")[1];
   }
 
+  // 3) decode token
+  const decoded = await promisify(jwt.verify)(token, process.env.SECRET_ACCESS);
+
+  // 4) get sid from decoded token and assign it to variable
+  const sidFromToken = decoded.sid;
+
+  // 5) get id of a current user and assign it to constant
+  const { _id } = req.user;
+
+  // 6) find a session where sid from token matches sid in database and current user is it's owner
+  // If we would've found session based only on owner's id and the user was logged in multiple times we would be able to log out multiple times from his different sessions
+  const userSession = await Session.findOne({ sid: sidFromToken, owner: _id });
+
   try {
-    await User.findByIdAndUpdate(_id, {
-      accessToken: null,
-      refreshToken: null,
-      sid: null,
-    });
+    // 7) find a session based on it's id found in previous step and remove it from database
+    await Session.findByIdAndRemove(userSession._id);
     return res.status(204).json({
       status: "No Content",
       code: 204,
@@ -126,29 +162,31 @@ const refreshTokens = async (req, res, next) => {
   }
 
   const { _id } = req.user;
-  const user = await User.findOne({ _id });
+  const userSession = await Session.findOne({ owner: _id });
 
-  if (sid !== user.sid) {
+  if (sid !== userSession.sid) {
     return res.status(403).json({ message: "Wrong sid provided" });
   }
+
+  const user = await User.findOne({ _id });
+
+  const newSid = uuidv4();
 
   const payload = {
     id: user._id,
     email: user.email,
+    sid: newSid,
   };
 
-  const newAccessToken = jwt.sign(payload, process.env.SECRETACC, {
+  const newAccessToken = jwt.sign(payload, process.env.SECRET_ACCESS, {
     expiresIn: "1h",
   });
-  const newRefreshToken = jwt.sign(payload, process.env.SECRETREF, {
+  const newRefreshToken = jwt.sign(payload, process.env.SECRET_REFRESH, {
     expiresIn: "1h",
   });
-  const newSid = uuidv4();
 
   try {
-    await User.findByIdAndUpdate(_id, {
-      accessToken: newAccessToken,
-      refreshToken: newRefreshToken,
+    await Session.findByIdAndUpdate(userSession._id, {
       sid: newSid,
     });
   } catch (e) {
@@ -156,11 +194,11 @@ const refreshTokens = async (req, res, next) => {
     next(e);
   }
 
-  const newUserData = await User.findOne({ _id });
+  const newSessionData = await Session.findOne({ owner: _id });
   res.status(200).json({
-    newAccessToken: newUserData.accessToken,
-    newRefreshToken: newUserData.refreshToken,
-    newSid: newUserData.sid,
+    newAccessToken,
+    newRefreshToken,
+    newSid: newSessionData.sid,
   });
 };
 
