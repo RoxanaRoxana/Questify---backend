@@ -1,8 +1,9 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-const currentDate = new Date();
-const currentHour = currentDate.toTimeString().split(" ")[0].slice(0, 5);
+const currentHour = () => {
+  return new Date().toTimeString().split(" ")[0].slice(0, 5);
+};
 
 const card = new Schema(
   {

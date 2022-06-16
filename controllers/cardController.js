@@ -1,29 +1,19 @@
+const { promisify } = require("util");
+const jwt = require("jsonwebtoken");
 const Card = require("../service/schemas/card");
-const { cardSchema } = require("../helpers/joi");
+const { cardSchema, editedCardSchema } = require("../helpers/joi");
 const mongoose = require("mongoose");
 
 const createCard = async (req, res, next) => {
   const { title, difficulty, category, date, time, type } = req.body;
-
-  if (!title) {
-    return res.status(400).json({ message: "Title is required" });
-  }
-
-  if (!difficulty) {
-    return res.status(400).json({ message: "Difficulty is required" });
-  }
-
-  if (!date) {
-    return res.status(400).json({ message: "Date is required" });
-  }
-
-  if (!type) {
-    return res.status(400).json({ message: "Type is required" });
-  }
-
   const { _id } = req.user;
   const { error } = cardSchema.validate({
     title,
+    difficulty,
+    category,
+    date,
+    time,
+    type,
   });
 
   if (error) {
@@ -62,22 +52,79 @@ const editCard = async (req, res, next) => {
     return res.status(400).json({ message: "Invalid cardId" });
   }
 
-  const newCardData = req.body;
+  const cardInDb = await Card.findById(cardId);
+
+  if (!cardInDb) {
+    return res
+      .status(400)
+      .json({ message: "No card with given Id in database!" });
+  }
+
+  const cardsOwner = cardInDb.owner.toString();
+
+  let token;
+
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    token = req.headers.authorization.split(" ")[1];
+  }
+
+  const decoded = await promisify(jwt.verify)(token, process.env.SECRET_ACCESS);
+
+  const userId = decoded.id;
+
+  if (cardsOwner !== userId) {
+    return res.status(403).json({ message: "You are not the card's owner!" });
+  }
+
+  const { title, difficulty, category, date, time, type } = req.body;
+
+  if (!title && !difficulty && !category && !date && !time && !type) {
+    return res.status(400).json({
+      message:
+        "Nothing to change! Please provide at least one element that you want to change",
+    });
+  }
+
+  if (
+    cardInDb.title === title &&
+    cardInDb.difficulty === difficulty &&
+    cardInDb.category === category &&
+    cardInDb.date === date &&
+    cardInDb.time === time &&
+    cardInDb.type === type
+  ) {
+    return res.status(400).json({
+      message: "Provided elements are the same! Nothing was changed!",
+    });
+  }
+
+  const { error } = editedCardSchema.validate({
+    title,
+    difficulty,
+    category,
+    date,
+    time,
+    type,
+  });
+
+  if (error) {
+    return res.status(400).json({ message: error.message });
+  }
+
   try {
-    const result = await Card.findOneAndUpdate(
-      { _id: cardId },
-      { $set: newCardData },
-      {
-        new: true,
-        runValidators: true,
-        strict: "throw",
-      }
-    );
-    if (!result) {
-      res.status(404).json({ message: "Card not found!" });
-    } else {
-      res.status(200).json({ editedCard: result });
-    }
+    await Card.findByIdAndUpdate(cardId, {
+      title,
+      difficulty,
+      category,
+      date,
+      time,
+      type,
+    });
+    const result = await Card.findById(cardId);
+    res.status(200).json({ editedCard: result });
   } catch (e) {
     console.error(e);
     next(e);
