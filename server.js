@@ -26,7 +26,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: "http://localhost:3000",
+        url: "https://questify-backend-pl-on-2.herokuapp.com",
       },
     ],
   },
