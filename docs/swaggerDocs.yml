@@ -131,14 +131,14 @@ components:
                   description: Card's difficulty
                 category:
                   type: string
-                  example: Learning
+                  example: LEARNING
                   enum:
-                    - Stuff
-                    - Family
-                    - Health
-                    - Learning
-                    - Leisure
-                    - Work
+                    - STUFF
+                    - FAMILY
+                    - HEALTH
+                    - LEARNING
+                    - LEISURE
+                    - WORK
                   description: Card's category
                 date:
                   type: string
@@ -150,10 +150,10 @@ components:
                   description: Card's time (deadline, if card is challenge)
                 type:
                   type: string
-                  example: Task
+                  example: quest
                   enum:
-                    - Task
-                    - Challenge
+                    - quest
+                    - challenge
                   description: Card's type
                 isCompleted:
                   type: boolean
@@ -215,14 +215,14 @@ components:
           description: Card's difficulty
         category:
           type: string
-          example: Learning
+          example: LEARNING
           enum:
-            - Stuff
-            - Family
-            - Health
-            - Learning
-            - Leisure
-            - Work
+            - STUFF
+            - FAMILY
+            - HEALTH
+            - LEARNING
+            - LEISURE
+            - WORK
           description: Card's category
         date:
           type: string
@@ -234,10 +234,10 @@ components:
           description: Card's time (deadline, if card is challenge)
         type:
           type: string
-          example: Task
+          example: quest
           enum:
-            - Task
-            - Challenge
+            - quest
+            - challenge
           description: Card's type
     Card Response:
       type: object
@@ -259,14 +259,14 @@ components:
               description: Card's difficulty
             category:
               type: string
-              example: Learning
+              example: LEARNING
               enum:
-                - Stuff
-                - Family
-                - Health
-                - Learning
-                - Leisure
-                - Work
+                - STUFF
+                - FAMILY
+                - HEALTH
+                - LEARNING
+                - LEISURE
+                - WORK
               description: Card's category
             date:
               type: string
@@ -278,10 +278,10 @@ components:
               description: Card's time (deadline, if card is challenge)
             type:
               type: string
-              example: Task
+              example: quest
               enum:
-                - Task
-                - Challenge
+                - quest
+                - challenge
               description: Card's type
             isCompleted:
               type: boolean
@@ -320,14 +320,14 @@ components:
               description: Card's difficulty
             category:
               type: string
-              example: Learning
+              example: LEARNING
               enum:
-                - Stuff
-                - Family
-                - Health
-                - Learning
-                - Leisure
-                - Work
+                - STUFF
+                - FAMILY
+                - HEALTH
+                - LEARNING
+                - LEISURE
+                - WORK
               description: Card's category
             date:
               type: string
@@ -339,10 +339,10 @@ components:
               description: Card's time (deadline, if card is challenge)
             type:
               type: string
-              example: Task
+              example: quest
               enum:
-                - Task
-                - Challenge
+                - quest
+                - challenge
               description: Card's type
             isCompleted:
               type: boolean
@@ -371,14 +371,14 @@ components:
           description: Card's difficulty
         category:
           type: string
-          example: Stuff
+          example: STUFF
           enum:
-            - Stuff
-            - Family
-            - Health
-            - Learning
-            - Leisure
-            - Work
+            - STUFF
+            - FAMILY
+            - HEALTH
+            - LEARNING
+            - LEISURE
+            - WORK
           description: Card's category
         date:
           type: string
@@ -390,10 +390,10 @@ components:
           description: Card's time (deadline, if card is challenge)
         type:
           type: string
-          example: Task
+          example: quest
           enum:
-            - Task
-            - Challenge
+            - quest
+            - challenge
           description: Card's type
     Edit Card Response:
       type: object
@@ -415,14 +415,14 @@ components:
               description: Card's difficulty
             category:
               type: string
-              example: Stuff
+              example: STUFF
               enum:
-                - Stuff
-                - Family
-                - Health
-                - Learning
-                - Leisure
-                - Work
+                - STUFF
+                - FAMILY
+                - HEALTH
+                - LEARNING
+                - LEISURE
+                - WORK
               description: Card's category
             date:
               type: string
@@ -434,10 +434,10 @@ components:
               description: Card's time (deadline, if card is challenge)
             type:
               type: string
-              example: Task
+              example: quest
               enum:
-                - Task
-                - Challenge
+                - quest
+                - challenge
               description: Card's type
             isCompleted:
               type: boolean
@@ -470,14 +470,14 @@ components:
               description: Card's difficulty
             category:
               type: string
-              example: Stuff
+              example: STUFF
               enum:
-                - Stuff
-                - Family
-                - Health
-                - Learning
-                - Leisure
-                - Work
+                - STUFF
+                - FAMILY
+                - HEALTH
+                - LEARNING
+                - LEISURE
+                - WORK
               description: Card's category
             date:
               type: string
@@ -489,10 +489,10 @@ components:
               description: Card's time (deadline, if card is challenge)
             type:
               type: string
-              example: Task
+              example: quest
               enum:
-                - Task
-                - Challenge
+                - quest
+                - challenge
               description: Card's type
             isCompleted:
               type: boolean
