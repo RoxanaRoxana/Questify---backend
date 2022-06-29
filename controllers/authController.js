@@ -3,22 +3,24 @@ const jwt = require("jsonwebtoken");
 const User = require("../service/schemas/user");
 
 const protectAccess = async (req, res, next) => {
-  // 1) Getting token and checking if it's there
+  // 1) Getting token and checking if it's in headers and if it starts with 'Bearer'.
   let token;
 
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
   ) {
+    // if it exists assign it to 'token' variable
     token = req.headers.authorization.split(" ")[1];
   }
 
+  // if token doesn't exist return response message with 401 code
   if (!token) {
     return res
       .status(401)
       .json({ message: "You are not logged in! Please log in to get access." });
   }
-  // 2) Verification token
+  // 2) Verification of a token
   try {
     await promisify(jwt.verify)(token, process.env.SECRET_ACCESS);
   } catch (e) {

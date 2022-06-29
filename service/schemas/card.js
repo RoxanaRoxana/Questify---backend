@@ -20,8 +20,8 @@ const card = new Schema(
     },
     category: {
       type: String,
-      enum: ["Stuff", "Family", "Health", "Learning", "Leisure", "Work"],
-      default: "Stuff",
+      enum: ["STUFF", "FAMILY", "HEALTH", "LEARNING", "LEISURE", "WORK"],
+      default: "STUFF",
     },
     date: {
       type: String,
@@ -33,7 +33,7 @@ const card = new Schema(
     },
     type: {
       type: String,
-      enum: ["Task", "Challenge"],
+      enum: ["quest", "challenge"],
       required: [true, "Card's type is required"],
     },
     isCompleted: {
